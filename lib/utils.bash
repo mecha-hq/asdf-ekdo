@@ -38,10 +38,10 @@ download_release() {
 	version="$1"
 	filename="$2"
 
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	url="${GH_REPO}/releases/download/v${version}/${TOOL_NAME}-$(get_platform)-$(get_arch).tar.gz"
 
-	echo "* Downloading $TOOL_NAME release $version..."
-	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+	echo "* Downloading ${TOOL_NAME} release ${version}..."
+	curl "${curl_opts[@]}" -o "${filename}" -C - "${url}" || fail "Could not download ${url}"
 }
 
 install_version() {
@@ -66,4 +66,27 @@ install_version() {
 		rm -rf "$install_path"
 		fail "An error occurred while installing $TOOL_NAME $version."
 	)
+}
+
+get_platform() {
+	uname | tr '[:upper:]' '[:lower:]'
+}
+
+get_arch() {
+	local arch=""
+
+	case "$(uname -m)" in
+	x86_64 | amd64) arch="amd64" ;;
+	i686 | i386) arch="386" ;;
+	armv6l) arch="armv6" ;;
+	armv7l) arch="armv7" ;;
+	aarch64 | arm64) arch="arm64" ;;
+	ppc64le) arch="ppc64le" ;;
+	*)
+		echo "Arch '$(uname -m)' not supported!" >&2
+		exit 1
+		;;
+	esac
+
+	echo -n $arch
 }
